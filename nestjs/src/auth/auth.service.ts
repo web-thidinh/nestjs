@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { Injectable} from "@nestjs/common";
+import { Injectable, PreconditionFailedException, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
 import { Request, Response } from "express";
 import { InjectModel } from "@nestjs/mongoose";
 import { Users, UsersDocument } from './auth.modal'
@@ -23,10 +23,7 @@ export class AuthService {
         const checkExist = await this.authModel.findOne({email:email});
         const hashPassword = await bcrypt.hash(password,saltOrRounds);
         if(checkExist !== null){
-            return {
-                error:true,
-                message: 'Email already exist !'
-            }
+            throw new UnprocessableEntityException('Email already exist !');
         }
         const newUser = new this.authModel({
             email: email,
@@ -34,7 +31,8 @@ export class AuthService {
         });
         newUser.save();
         return {
-            message: 'Register successful'
+            message: 'Register successful',
+            user: newUser.toJSON().email
         }
     }
 
@@ -52,20 +50,10 @@ export class AuthService {
             }
         }
         else if(!user){
-            return {
-                error:true,
-                message: 'Email does not exist!'
-            }
+            throw new NotFoundException('User email not found !');
         }
         else if(bcrypt.compare(password,user.password)){
-            return {
-                error:true,
-                message: 'Wrong password!'
-            }
-        }
-        return {
-            error: true,
-            message: 'Login faild'
+            throw new PreconditionFailedException('Wrong password !');
         }
     }
 }

@@ -8,14 +8,24 @@ export class AuthController {
     constructor(private authService: AuthService){}
 
     @Post('register')
-    async register(@Body() body: AuthData){
-        const result = await this.authService.submitRegister(body);
-        return {result:result};
+    async register(@Body() body: AuthData,@Res() res: Response){
+        try{
+            const result = await this.authService.submitRegister(body);
+            return res.json(result);
+        }
+        catch(error){
+            return res.json(error);
+        }
     }
 
     @Post('login')
-    async login(@Body() body: AuthData){
-        const result = await this.authService.submitLogin(body);
-        return {result: result}
+    async login(@Body() body: AuthData, @Res() res: Response){
+        try{
+            const result = await this.authService.submitLogin(body);
+            return res.json(result);
+        }
+        catch(error){
+            return res.json(error);
+        }
     }
 }
