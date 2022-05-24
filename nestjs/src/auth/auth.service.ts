@@ -1,10 +1,11 @@
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { Injectable, PreconditionFailedException, NotFoundException, UnprocessableEntityException} from "@nestjs/common";
-import { Request, Response } from "express";
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from "@nestjs/mongoose";
 import { Users, UsersDocument } from './auth.modal'
+import { Injectable, PreconditionFailedException, 
+        NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 
 export interface AuthData {
     email: string
@@ -15,7 +16,20 @@ export interface AuthData {
 
 export class AuthService {
     
-    constructor(@InjectModel(Users.name) private authModel: Model<UsersDocument>) {}
+    constructor(
+        @InjectModel(Users.name) 
+        private authModel: Model<UsersDocument>,
+        private jwtService: JwtService
+    ) {}
+
+    async validateUser(username: string, password: string): Promise<any> {
+        const user = await this.authModel.findOne({email:username});
+        if (user && (await bcrypt.compare(password,user.password))) {
+          const { password, ...result } = user;
+          return result;
+        }
+        return null;
+    }
     
     async submitRegister(data: AuthData){
         const saltOrRounds = 10;
@@ -38,12 +52,12 @@ export class AuthService {
 
     async submitLogin(data: AuthData){
         const { email, password } = data
+        console.log(email,password)
         const user = await this.authModel.findOne({email:email});
+        console.log(user)
         if(user && (await bcrypt.compare(password,user.password))){
-            const private_token = jwt.sign(
-                {userId: user._id as string},
-                process.env.ACCESS_TOKEN_SECRET,
-            );
+            const private_token = this.jwtService.sign({username: user.email, sub: user._id});
+            console.log(private_token);
             return {
                 message: 'Login successful',
                 token: private_token
