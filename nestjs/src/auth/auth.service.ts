@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from "@nestjs/mongoose";
 import { Users, UsersDocument } from './auth.modal'
-import { Injectable, PreconditionFailedException, 
+import { Injectable, PreconditionFailedException,
         NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 
 export interface AuthData {
@@ -25,8 +25,21 @@ export class AuthService {
     async validateUser(username: string, password: string): Promise<any> {
         const user = await this.authModel.findOne({email:username});
         if (user && (await bcrypt.compare(password,user.password))) {
-          const { password, ...result } = user;
-          return result;
+            const { _id,email, ...result } = user;
+            return {
+                    userId:_id,
+                    userEmail:email
+                }
+        }
+        else if(!user){
+            return{
+                message:'User not found !'
+            }
+        }
+        else if(bcrypt.compare(password,user.password)){
+            return{
+                message:'Wrong password !'
+            }
         }
         return null;
     }
@@ -50,24 +63,16 @@ export class AuthService {
         }
     }
 
-    async submitLogin(data: AuthData){
-        const { email, password } = data
-        console.log(email,password)
-        const user = await this.authModel.findOne({email:email});
-        console.log(user)
-        if(user && (await bcrypt.compare(password,user.password))){
-            const private_token = this.jwtService.sign({username: user.email, sub: user._id});
-            console.log(private_token);
-            return {
-                message: 'Login successful',
-                token: private_token
+    async submitLogin(user:any){
+        if(user.userId){
+            const payload = { username: user.userEmail, sub: user.userId.toJSON() }; 
+            return{
+                message:'Login successful',
+                access_token: this.jwtService.sign(payload),
             }
         }
-        else if(!user){
-            throw new NotFoundException('User email not found !');
-        }
-        else if(bcrypt.compare(password,user.password)){
-            throw new PreconditionFailedException('Wrong password !');
+        return{
+            message: user.message
         }
     }
 }

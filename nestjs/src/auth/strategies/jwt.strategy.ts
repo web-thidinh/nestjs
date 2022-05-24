@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
+
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
@@ -13,6 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return { userId: payload.sub, userEmail: payload.email };
+    console.log(payload)
+    return { userId: payload.sub, username: payload.username };
   }
 }
