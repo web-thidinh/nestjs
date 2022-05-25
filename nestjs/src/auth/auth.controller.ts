@@ -1,7 +1,7 @@
 import { Controller, Post, Res, Body, UseGuards, Request, Req} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { Response } from "express";
-import { AuthData } from "./auth.service";
+import { CreateAuthDto } from "./dto/create-auth.dto";
 import { LocalAuthGuard } from "./config/local-auth.guard";
 
 @Controller()
@@ -9,9 +9,9 @@ export class AuthController {
     constructor(private authService: AuthService){}
 
     @Post('user/register')
-    async register(@Body() body: AuthData,@Res() res: Response){
+    async register(@Body() createAuthDto: CreateAuthDto,@Res() res: Response){
         try{
-            const result = await this.authService.submitRegister(body);
+            const result = await this.authService.submitRegister(createAuthDto);
             return res.json(result);
         }
         catch(error){

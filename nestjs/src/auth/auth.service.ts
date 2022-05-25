@@ -1,16 +1,10 @@
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from "@nestjs/mongoose";
 import { Users, UsersDocument } from './auth.modal'
-import { Injectable, PreconditionFailedException,
-        NotFoundException, UnprocessableEntityException } from "@nestjs/common";
-
-export interface AuthData {
-    email: string
-    password: string
-}
+import { AuthData } from './interface/auth.interface';
+import { Injectable, UnprocessableEntityException } from "@nestjs/common";
 
 @Injectable({})
 
@@ -46,14 +40,14 @@ export class AuthService {
     
     async submitRegister(data: AuthData){
         const saltOrRounds = 10;
-        const { email, password } = data;
-        const checkExist = await this.authModel.findOne({email:email});
+        const { username, password } = data;
+        const checkExist = await this.authModel.findOne({email:username});
         const hashPassword = await bcrypt.hash(password,saltOrRounds);
         if(checkExist !== null){
             throw new UnprocessableEntityException('Email already exist !');
         }
         const newUser = new this.authModel({
-            email: email,
+            email: username,
             password: hashPassword
         });
         newUser.save();

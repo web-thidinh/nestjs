@@ -1,12 +1,49 @@
 import { AtmService } from "./atm.service";
 import { Request, Response } from "express";
-import { Controller, Get, UseGuards, Res, Req} from "@nestjs/common";
+import { CreateAtmDto, CreateQueueDto } from './dto/create-atm.dto';
+import { Controller, Get, UseGuards, Res, Req, Post, Body, Delete} from "@nestjs/common";
 import { JwtAuthGuard  } from "../auth/config/jwt-auth.guard";
 
 @Controller()
 export class AtmController {
 
     constructor(private atmService: AtmService){}
+
+    @UseGuards(JwtAuthGuard)
+    @Post('atm/create')
+    async createAtm(@Body() createAtmDto: CreateAtmDto, @Res() res: Response  ){
+        try{
+            const result = await this.atmService.createAtm(createAtmDto);
+            return result;
+        }
+        catch(error){
+            return res.json(error);
+        }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('queue/create')
+    async createQueue(@Body() createQueueDto: CreateQueueDto, @Res() res: Response){
+        try{
+            const result = await this.atmService.createQueue(createQueueDto);
+            return result;
+        }
+        catch(error){
+            return res.json(error);
+        }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete('atm/delete')
+    async deleteAtm(@Body() id: any, @Res() res: Response){
+        try{
+            const result = this.atmService.deleleAtm(id)
+            return result;
+        }
+        catch(error){
+            return res.json(error);
+        }
+    }
 
     @UseGuards(JwtAuthGuard)
     @Get('atm/getAtms')
