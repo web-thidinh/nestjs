@@ -14,7 +14,7 @@ export class AtmController {
     async createAtm(@Body() createAtmDto: CreateAtmDto, @Res() res: Response  ){
         try{
             const result = await this.atmService.createAtm(createAtmDto);
-            return result;
+            return res.json(result);
         }
         catch(error){
             return res.json(error);
@@ -26,7 +26,7 @@ export class AtmController {
     async createQueue(@Body() createQueueDto: CreateQueueDto, @Res() res: Response){
         try{
             const result = await this.atmService.createQueue(createQueueDto);
-            return result;
+            return res.json(result);
         }
         catch(error){
             return res.json(error);
@@ -37,8 +37,8 @@ export class AtmController {
     @Delete('atm/delete')
     async deleteAtm(@Body() id: any, @Res() res: Response){
         try{
-            const result = this.atmService.deleleAtm(id)
-            return result;
+            const result = await this.atmService.deleleAtm(id);
+            return res.json(result);
         }
         catch(error){
             return res.json(error);
@@ -47,7 +47,7 @@ export class AtmController {
 
     @UseGuards(JwtAuthGuard)
     @Get('atm/getAtms')
-    async getAtms(@Res() res: Response, @Req() req: Request){
+    async getAtms(@Res() res: Response){
         try{
             const result = await this.atmService.getAtms();
             return res.json(result);

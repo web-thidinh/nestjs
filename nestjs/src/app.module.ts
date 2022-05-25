@@ -10,8 +10,8 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/nest'),
     ConfigModule.forRoot(),
-    AuthModule, 
-    AtmModule
+    AuthModule,
+    AtmModule,
   ],
   controllers: [AppController],
   providers: [AppService],

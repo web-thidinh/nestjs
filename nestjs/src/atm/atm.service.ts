@@ -99,10 +99,8 @@ export class AtmService {
         };
     }
 
-    async deleleAtm(data: any){
-        const atm = data.atms.find((matchItem: AtmType) => matchItem.id === data.id)
-        console.log(atm)
-        console.log(data.atms)
+    async deleleAtm(item: any){
+        const atm = data.atms.find((matchItem: AtmType) => matchItem.id === item.id)
         const waitForAtm = (i:any) => {   
             if(data.atms[i].status !== 'Free'){
                 setTimeout(() => {  
@@ -122,24 +120,32 @@ export class AtmService {
                 waitForAtm(i)
             }
         }
-        console.log(data.atms)
+        return{
+            message:'Delete atm successful',
+            data:{
+                atms:data.atms
+            }
+        }
     }
 
     async getAtms(){
         return {
-            atms: data.atms
+            message:'Get atms successful',
+            data: data.atms
         }
     }
 
     async getQueues(){
         return {
-            queues: data.queues
+            message:'Get queues successful',
+            data: data.queues
         }
     }
 
     async getProcesses(){
         return {
-            processedClients: data.processedClients
+            message:'Get process successful',
+            data: data.processedClients
         }
     }
 }

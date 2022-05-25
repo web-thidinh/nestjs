@@ -27,12 +27,14 @@ export class AuthService {
         }
         else if(!user){
             return{
-                message:'User not found !'
+                message:'User not found !',
+                data:{}
             }
         }
         else if(bcrypt.compare(password,user.password)){
             return{
-                message:'Wrong password !'
+                message:'Wrong password !',
+                data: {}
             }
         }
         return null;
@@ -53,7 +55,9 @@ export class AuthService {
         newUser.save();
         return {
             message: 'Register successful',
-            user: newUser.toJSON().email
+            data: {
+                user: newUser.toJSON().email
+            }
         }
     }
 
@@ -62,11 +66,14 @@ export class AuthService {
             const payload = { username: user.userEmail, sub: user.userId.toJSON() }; 
             return{
                 message:'Login successful',
-                access_token: this.jwtService.sign(payload),
+                data:{
+                    access_token: this.jwtService.sign(payload)
+                },
             }
         }
         return{
-            message: user.message
+            message: user.message,
+            data:{}
         }
     }
 }
