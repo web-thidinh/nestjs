@@ -1,0 +1,52 @@
+<div class="login-page">
+    <h1 class="login-header">Login with email</h1>
+    <form method="POST" action="" class="login-form">
+        <div class="login-group">
+
+            {{#if message}}
+                <div class="login-error">{{message}}</div>
+            {{/if}}
+
+            {{#if email}}
+                <input type="text" name="username" placeholder="Email" value={{email}} class="login-input" onfocus="">
+            {{else}}
+                <input type="text" name="username" placeholder="Email" value="" class="login-input" onfocus="">
+            {{/if}}
+
+        </div>
+        <div class="login-group">
+
+            {{#if password}}
+                <input type="text" name="password" placeholder="Password" value={{password}} class="login-input">
+            {{else}}
+                <input type="text" name="password" placeholder="Password" value="" class="login-input">
+            {{/if}}
+
+        </div>
+        <div class="login-group">
+            <button type="submit" class="login-button">Login</button>
+        </div>
+        <div class="login-group login-group-social">
+            <button type="submit" class="login-button login-social login-social-google">
+                <img class="login-social-icon" src="../public/images/google.png" alt="">
+               <span>Login with Google</span> 
+            </button>
+        </div>
+        <div class="login-group login-group-social">
+            <button type="submit" class="login-button login-social login-social-facebook">
+                <img class="login-social-icon" src="../public/images/facebook.png" alt="">
+                <span>Login with Facebook</span>
+            </button>
+        </div>
+    </from>
+</div>
+
+<script>
+    var errorElement = document.querySelector('.login-error');
+    var inputElement = document.querySelectorAll('.login-input');
+    inputElement.forEach((inputItem)=>{
+        inputItem.addEventListener('focus',(event)=>{
+            errorElement.classList.add('hide-error');
+        })
+    });
+</script>

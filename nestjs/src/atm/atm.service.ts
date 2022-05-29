@@ -65,7 +65,7 @@ setInterval(() => {
     }
     data.queues.push(randomPerson());
     data.transactions(); 
-},60000)
+},60000 * 60)
 
 @Injectable({})
 export class AtmService {

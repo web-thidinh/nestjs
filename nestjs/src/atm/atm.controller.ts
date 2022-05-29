@@ -47,7 +47,7 @@ export class AtmController {
 
     @UseGuards(JwtAuthGuard)
     @Get('atm/getAtms')
-    async getAtms(@Res() res: Response){
+    async getAtms(@Res() res: Response, @Req() req: Request){
         try{
             const result = await this.atmService.getAtms();
             return res.json(result);

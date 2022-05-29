@@ -1,10 +1,10 @@
-import { Get, Controller, Render } from '@nestjs/common';
-
+import { Get, Controller, Render, Res } from '@nestjs/common';
+import { Response } from 'express';
 @Controller()
 export class AppController {
-  @Get()
-  @Render('home_layout.hbs')
-  root() {
-    return { title: 'Server NestJs', message: 'Server NestJs Running' };
+  @Get('/')
+  @Render('login')
+  Login() {
+    return { layout:'index', title: 'Server NestJs' };
   }
 }

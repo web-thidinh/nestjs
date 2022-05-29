@@ -16,6 +16,11 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
+    findUserById(id){
+        const user = this.authModel.findOne({_id:id});
+        return user;
+    }
+
     async validateUser(username: string, password: string): Promise<any> {
         const user = await this.authModel.findOne({email:username});
         if (user && (await bcrypt.compare(password,user.password))) {
@@ -61,9 +66,11 @@ export class AuthService {
         }
     }
 
-    async submitLogin(user:any){
-        if(user.userId){
-            const payload = { username: user.userEmail, sub: user.userId.toJSON() }; 
+    async submitLogin(data:any){
+        const { username, password } = data
+        const user = await this.authModel.findOne({email:username});
+        if (user && (await bcrypt.compare(password,user.password))) {
+            const payload = { username: user.email, sub: user.password };
             return{
                 message:'Login successful',
                 data:{
@@ -71,9 +78,60 @@ export class AuthService {
                 },
             }
         }
-        return{
-            message: user.message,
-            data:{}
+        else if(!user){
+            return{
+                message:'User not found !',
+                data:{}
+            }
+        }
+        else if(bcrypt.compare(password,user.password)){
+            return{
+                message:'Wrong password !',
+                data: {}
+            }
+        }
+    }
+
+    async submitLoginRichClient(data: AuthData){
+        const { username, password } = data;
+        const user = await this.authModel.findOne({email:username});
+        if (user && (await bcrypt.compare(password,user.password))) {
+            const payload = { username: user.email, sub: user.password };
+            return{
+                message:'Login successful',
+                data:{
+                    access_token: this.jwtService.sign(payload)
+                },
+            }
+        }
+        else if(!user){
+            return{
+                message:'User not found !',
+                data:{}
+            }
+        }
+        else if(bcrypt.compare(password,user.password)){
+            return{
+                message:'Wrong password !',
+                data: {}
+            }
+        }
+    }
+
+    async googleLogin(req){
+        if (!req.user) {
+            return {
+                message:'No user from google',
+                data:{
+                    user:null
+                }
+            }
+        }
+        return {
+            message: 'User information from google',
+            data:{
+                user: req.user
+            }
         }
     }
 }
