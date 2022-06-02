@@ -2,9 +2,11 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from "@nestjs/mongoose";
-import { Users, UsersDocument } from './auth.modal'
-import { AuthData } from './interface/auth.interface';
+import { OAuth2Client } from "google-auth-library";
+import { Users, UsersDocument } from './auth.modal';
+import { AuthData, AuthGoogle } from './interface/auth.interface';
 import { Injectable, UnprocessableEntityException } from "@nestjs/common";
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable({})
 
@@ -66,11 +68,11 @@ export class AuthService {
         }
     }
 
-    async submitLogin(data:any){
-        const { username, password } = data
+    async submitLogin(body:any){
+        const { username, password } = body
         const user = await this.authModel.findOne({email:username});
         if (user && (await bcrypt.compare(password,user.password))) {
-            const payload = { username: user.email, sub: user.password };
+            const payload = { username: user.email, sub: user._id };
             return{
                 message:'Login successful',
                 data:{
@@ -118,20 +120,69 @@ export class AuthService {
         }
     }
 
-    async googleLogin(req){
-        if (!req.user) {
+    async googleLoginRedirect(req: any){
+        const user = req.user;
+        if(user){
+            const checkUser = await this.authModel.findOne({email:user.email});
+            if(checkUser) { console.log('User exist') }
+            else {
+                const newUser = new this.authModel(user)
+                newUser.save();
+            }
             return {
-                message:'No user from google',
-                data:{
-                    user:null
-                }
+                message: "User information from google",
+                data: user
             }
         }
         return {
-            message: 'User information from google',
-            data:{
-                user: req.user
+            message: "No user from google",
+            data:{}
+        }
+    }
+
+    async googleReactLogin(body: any){
+        const { token } = body;
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { email_verified, name, email, picture } = ticket.getPayload();
+        if(email_verified){
+            const generateToken = this.jwtService.sign({email});
+            const checkUser = await this.authModel.findOne({email: email})
+            if(checkUser) {
+                const { email, from } = checkUser
+                console.log(name, picture)
+                if(from == undefined){
+                    console.log(from, name, picture);
+                    console.log('update user');
+                    await this.authModel.updateOne({email: email},{
+                        name: name,
+                        picture: picture,
+                        from:'google'
+                    })
+                }
+                return {
+                    message: 'Get user exist from database',
+                    data: {email, name, picture, access_token: generateToken}
+                };
             }
+            const newUser = new this.authModel({
+                email: email,
+                name: name,
+                picture: picture,
+                from: 'google'
+            });
+            newUser.save();
+    
+            return {
+                message:'Login google successful',
+                data:{ email, name, picture, access_token: generateToken }
+            };
+        }
+        return {
+            message: 'Login google faild',
+            data: null
         }
     }
 }

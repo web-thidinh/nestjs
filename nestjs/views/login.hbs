@@ -27,16 +27,16 @@
             <button type="submit" class="login-button">Login</button>
         </div>
         <div class="login-group login-group-social">
-            <button type="submit" class="login-button login-social login-social-google">
+            <div onclick="OpenNewTab()" class="login-button login-social login-social-google">
                 <img class="login-social-icon" src="../public/images/google.png" alt="">
                <span>Login with Google</span> 
-            </button>
+            </div>
         </div>
         <div class="login-group login-group-social">
-            <button type="submit" class="login-button login-social login-social-facebook">
+            <a class="login-button login-social login-social-facebook">
                 <img class="login-social-icon" src="../public/images/facebook.png" alt="">
                 <span>Login with Facebook</span>
-            </button>
+            </a>
         </div>
     </from>
 </div>
@@ -49,4 +49,15 @@
             errorElement.classList.add('hide-error');
         })
     });
+    function OpenNewTab(){
+        const gooleLoginUrl = 'http://localhost:3333/google/login'
+        const GoogleLoginWindow = window.open(
+            gooleLoginUrl,
+            "_parent",
+            "toolbar=yes,scrollbars=yes,resizable=yes,top=150,left=500,width=600,height=700"
+        );
+        console.log(GoogleLoginWindow)
+    }
+    console.log(screen.width)
+    console.log(screen.height)
 </script>

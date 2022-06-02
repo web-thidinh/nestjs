@@ -42,30 +42,30 @@ const data = {
     }
 }
 
-setInterval(() => {
-    const randomPerson = () => {  
-        let text = '';
-        let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        let number = "1234";
-        let person ={
-            name:'',
-            transaction:''
-        };
+// setInterval(() => {
+//     const randomPerson = () => {  
+//         let text = '';
+//         let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+//         let number = "1234";
+//         let person ={
+//             name:'',
+//             transaction:''
+//         };
         
-        for (var i = 0; i < 8; i++){
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
+//         for (var i = 0; i < 8; i++){
+//             text += possible.charAt(Math.floor(Math.random() * possible.length));
+//         }
 
-        for (var i = 0; i < 1; i++){
-            person.transaction = (number.charAt(Math.floor(Math.random() * number.length)));
-        }
-        person.name = text;
-        console.log(person)
-        return person;  
-    }
-    data.queues.push(randomPerson());
-    data.transactions(); 
-},60000 * 60)
+//         for (var i = 0; i < 1; i++){
+//             person.transaction = (number.charAt(Math.floor(Math.random() * number.length)));
+//         }
+//         person.name = text;
+//         console.log(person)
+//         return person;  
+//     }
+//     data.queues.push(randomPerson());
+//     data.transactions(); 
+// },60000 * 60)
 
 @Injectable({})
 export class AtmService {
