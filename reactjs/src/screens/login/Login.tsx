@@ -5,7 +5,6 @@ import styles from './Login.module.scss';
 import { register, login, loginRichClient, loginWithGoogle } from '../../services/auth';
 import { useAppDispatch } from '../../redux/hooks';
 import { setIsLogin } from '../../redux/slices/CommonSlices';
-import GoogleLogin from 'react-google-login';
 
 
 const Login : FunctionComponent = ()=> {
@@ -77,48 +76,6 @@ const Login : FunctionComponent = ()=> {
             // handle the response 
         });
     }
-    
-    // const handleLoginGoogle = async ()=>{
-    //     const screenWidth = window.innerWidth;
-    //     const screenHeight = window.innerHeight;
-    //     const popUpWidth = screenWidth / 2;
-    //     const popUpHeight = screenHeight - 80;
-    //     const popUpLeft = screenWidth/4;
-        
-    //     const gooleLoginUrl = 'http://localhost:3333/google/login';
-    //     const GoogleLoginWindow = window.open(
-    //         gooleLoginUrl,
-    //         "_parent",
-    //         `toolbar=yes,scrollbars=yes,resizable=yes,top=150,left=${popUpLeft},width=${popUpWidth},height=${popUpHeight}`
-    //     );
-
-    //     console.log(GoogleLoginWindow);
-    // };
-
-    // const handleLogin = async (googleData: any) => {
-    //     console.log(googleData.tokenId)
-    //     const res = await fetch('/api/google-login', {
-    //       method: 'POST',
-    //       body: JSON.stringify({
-    //         token: googleData.tokenId,
-    //       }),
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //     });
-    
-    //     const data = await res.json();
-    //     // setLoginData(data);
-    //     localStorage.setItem('loginData', JSON.stringify(data));
-    // };
-
-    // const handleSuccess = (result: any) => {
-    //     console.log(result);
-    // };
-
-    // const handleFailure = (result: any) => {
-    //     console.log(result);
-    // };
 
     return (
         <Grid 
@@ -184,17 +141,6 @@ const Login : FunctionComponent = ()=> {
                     </Button>)
                 }
             </Grid>
-            {/* <Grid className={styles.loginGroup} mb={3}>
-                <GoogleLogin
-                        clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}
-                        className={`${styles.loginSocialButton}`}
-                        buttonText="Log in with Google"
-                        onSuccess={handleLogin}
-                        onFailure={handleFailure}
-                        cookiePolicy={'single_host_origin'}
-                    >
-                </GoogleLogin>
-            </Grid> */}
             <Grid className={styles.loginGroup} mb={3}>
                 <Button 
                     className={`${styles.loginButton, styles.loginSocialButton}`} 
