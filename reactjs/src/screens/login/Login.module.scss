@@ -1,34 +1,60 @@
-.loginGroup{
-    width:300px;
-    display: flex;
-    justify-content: center;
-    .loginInput{
-        width:100%;
-    }
-    .loginButton{
-        width:50%;
-    }
-}
-.forgotPassword{
-    justify-content: space-between;
-    div{
+.loginPage{
+    margin-top: 100px;
+    .loginGroup{
+        width:300px;
+        position: relative;
         display: flex;
         justify-content: center;
-        align-items: center;
-        background-color: transparent;
-        border:none;
-        outline: none;
-        color:#1976d2;
-        cursor: pointer;
-        text-decoration: underline;
-        img{
-            width:20px;
-            height:20px;
-            margin-right: 4px;
-            object-fit:scale-down;
+        .loginError{
+            position: absolute;
+            top:-48px;
+            padding: 5px 0;
+            width:100%;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgb(237, 162, 162);
+            span{
+                color:red;
+            }
+        }
+        .loginInput{
+            width:100%;
+        }
+        .loginButton{
+            width:48%;
+        }
+        .loginSocialButton{
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     }
-    a{
-        color:#1976d2;
+    .forgotPassword{
+        justify-content: space-between;
+        div{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent;
+            border:none;
+            outline: none;
+            cursor: pointer;
+            img{
+                width:20px;
+                height:20px;
+                margin-right: 4px;
+                object-fit:scale-down;
+            }
+        }
+        .register{
+            color:#1976d2;
+            text-decoration: underline;
+        }
+        a{
+            color:#1976d2;
+        }
     }
 }

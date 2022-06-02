@@ -1,20 +1,25 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import type { RootState } from '../store'
+import type { RootState } from '../store';
+import { PayloadCommon } from '../interface';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+const authLocal = JSON.parse(localStorage.getItem('auth')!);
 interface CounterState {
     isLogin: boolean
+    user: object
 }
 
 const initialState: CounterState = {
-    isLogin: false
+    isLogin: authLocal ? authLocal.isLogin : false,
+    user: authLocal ? authLocal.user : {}
 }
 
 export const commonSlices = createSlice({
   name: 'counter',
   initialState,
   reducers: {
-    setIsLogin: (state, action: PayloadAction<boolean>) => {
-      state.isLogin = action.payload
+    setIsLogin: (state, action: PayloadAction<PayloadCommon>) => {
+      state.isLogin = action.payload.isLogin
+      state.user = action.payload.user
     },
   },
 })
