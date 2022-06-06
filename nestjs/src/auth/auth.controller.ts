@@ -9,7 +9,9 @@ const REACT_REDIRECT_URL = 'http://localhost:3000/'
 
 @Controller()
 export class AuthController {
+    
     constructor(private authService: AuthService){}
+
     @Post('')
     async loginRichClient(@Res() res: Response,@Req() req: Request){
         try{
@@ -42,16 +44,10 @@ export class AuthController {
     async login(@Body() body: Body, @Res() res: Response){
         try{
             const result = await this.authService.submitLogin(body);
-            if(result?.data?.access_token){
-                res.cookie('access_token',result.data.access_token,{
-                    signed:true,
-                    maxAge: 60000
-                });
-            }
             return res.json(result);
         }
         catch(error){
-            return res.json(error);
+            return res.json(error);     
         }
     }
 
@@ -62,7 +58,7 @@ export class AuthController {
     getDashboard(){
         return {layout:'index',title:'Dashboard page'};
     }
-
+    //Mvc google login
     @Get('google/login')
     @UseGuards(GoogleAuthGuard)
     async googleAuth(@Req() req: Request) {}
@@ -84,11 +80,22 @@ export class AuthController {
             return res.json(error);
         }
     }
-
+    //React google login
     @Post('react-google-login')
     async getGoogleLogin (@Req() req: Request,@Res() res: Response){
         try{
             const result = await this.authService.googleReactLogin(req.body);
+            return res.json(result);
+        }
+        catch(error){
+            return res.json(error);
+        }
+    }
+    //React facebook login
+    @Post('react-facebook-login')
+    async postFacebookLogin(@Req() req: Request,@Res() res: Response){
+        try{
+            const result = await this.authService.facebookReactLogin(req.body);
             return res.json(result);
         }
         catch(error){

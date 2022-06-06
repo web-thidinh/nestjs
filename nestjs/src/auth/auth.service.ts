@@ -1,11 +1,14 @@
+import axios from 'axios';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from "@nestjs/mongoose";
 import { OAuth2Client } from "google-auth-library";
+import { LoginSocial } from './dto/create-auth.dto';
 import { Users, UsersDocument } from './auth.modal';
 import { AuthData, AuthGoogle } from './interface/auth.interface';
 import { Injectable, UnprocessableEntityException } from "@nestjs/common";
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable({})
@@ -15,7 +18,7 @@ export class AuthService {
     constructor(
         @InjectModel(Users.name) 
         private authModel: Model<UsersDocument>,
-        private jwtService: JwtService
+        private jwtService: JwtService,
     ) {}
 
     findUserById(id){
@@ -76,7 +79,10 @@ export class AuthService {
             return{
                 message:'Login successful',
                 data:{
-                    access_token: this.jwtService.sign(payload)
+                    user:{
+                        email: user.email,
+                        access_token: this.jwtService.sign(payload)
+                    },
                 },
             }
         }
@@ -154,35 +160,100 @@ export class AuthService {
                 const { email, from } = checkUser
                 console.log(name, picture)
                 if(from == undefined){
-                    console.log(from, name, picture);
-                    console.log('update user');
                     await this.authModel.updateOne({email: email},{
                         name: name,
                         picture: picture,
-                        from:'google'
+                        from: LoginSocial.google
                     })
                 }
                 return {
                     message: 'Get user exist from database',
-                    data: {email, name, picture, access_token: generateToken}
+                    data: {
+                        user:{email, name, picture, access_token: generateToken}
+                    }
                 };
             }
             const newUser = new this.authModel({
                 email: email,
                 name: name,
                 picture: picture,
-                from: 'google'
+                from: LoginSocial.google
             });
             newUser.save();
     
             return {
                 message:'Login google successful',
-                data:{ email, name, picture, access_token: generateToken }
+                data:{ user:{email, name, picture, access_token: generateToken} }
             };
         }
         return {
             message: 'Login google faild',
             data: null
+        }
+    }
+
+    async facebookReactLogin(body: any){
+        const { userID, token } = body;
+        const data: any = await axios.get(`https://graph.facebook.com/${userID}?fields=name,picture,email&access_token=${token}`);
+        if(data?.data){
+            const { id, email, name, picture } = data?.data;
+            const generateToken = this.jwtService.sign({id,email,name});
+            const checkUser = await this.authModel.findOne({email: email});
+            if(checkUser && checkUser?.from) {
+                return {
+                    message: 'User information from DB',
+                    data: {
+                        user:{
+                            email: checkUser.email,
+                            name: checkUser.name,
+                            picture: checkUser.picture,
+                            access_token: generateToken
+                        }
+                    }
+                }    
+            }
+            if(checkUser && checkUser?.from === undefined){
+                await this.authModel.updateOne({email: email},{
+                    name: name,
+                    picture: picture?.data?.url,
+                    from: LoginSocial.facebook
+                })
+                return {
+                    message: 'Login successful',
+                    data: {
+                        user:{
+                            email,
+                            name,
+                            picture: picture?.data?.url,
+                            access_token: generateToken
+                        }
+                    }
+                } 
+            }
+            else {
+                const newUser = new this.authModel({
+                    email,
+                    name,
+                    picture: picture?.data?.url,
+                    from : LoginSocial.facebook
+                })
+                newUser.save();
+                return {
+                    message: "User information from facebook",
+                    data: {
+                        user:{
+                            email,
+                            name,
+                            picture: picture?.data?.url,
+                            access_token: generateToken
+                        }
+                    }
+                }
+            }
+        }
+        return {
+            message: "No user from facebook",
+            data:{}
         }
     }
 }
