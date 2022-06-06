@@ -1,19 +1,25 @@
-import  { FunctionComponent, useMemo, useState } from 'react';
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import debounce from 'lodash/debounce';
 import { Link } from 'react-router-dom';
-import { Grid,Button, TextField } from '@mui/material';
 import styles from './Login.module.scss';
-import { register, login, loginRichClient, loginWithGoogle } from '../../services/auth';
+import GoogleLogo from '../../images/google.png';
+import { isEmail } from '../../helper/validation';
 import { useAppDispatch } from '../../redux/hooks';
+import FacebookLogo from '../../images/facebook.png';
+import { Grid,Button, TextField } from '@mui/material';
 import { setIsLogin } from '../../redux/slices/CommonSlices';
+import { register, login, loginWithGoogle, loginWithFacebook } from '../../services/auth';
 
 
 const Login : FunctionComponent = ()=> {
 
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const [isLoginBtn, setIsLoginBtn] = useState<boolean>(true);
+    const [fbToken,setFbToken] = useState<string | undefined>();
     const [hasError, setHasError] = useState<string | undefined>();
-    const [isLoginBtn, setIsLoginBtn] = useState(true);
-    const [email,setEmail] = useState('test@gmail.com');
-    const [password,setPassword] = useState('Asdfgh1@3');
+    const [fbUserId,setFbUserId] = useState<string | undefined>();
+    const [email,setEmail] = useState<string>('test@gmail.com');
+    const [password,setPassword] = useState<string>('Asdfgh1@3');
 
     const handleRegister = async ()=> {
         const result = await register(email,password);
@@ -28,15 +34,36 @@ const Login : FunctionComponent = ()=> {
     }
 
     const handelLogin = async ()=>{
-        const result = await login(email,password);
-        console.log('Result:',result);
-        const error = result?.data?.access_token
-        if(error){
-            dispatch(setIsLogin({isLogin:true,user:{email:result?.data?.email}}));
-            localStorage.setItem('common',JSON.stringify({isLogin:true,user:{email:result?.data?.email}}));
+        if(email === '' || password === ''){
+            setHasError('Email or password can not empty!');
         }
-        setHasError(result?.message);
+        else{
+            const result = await login(email,password);
+            console.log('Result:',result);
+            const token = result?.data?.user?.access_token;
+            if(token){
+                dispatch(setIsLogin({isLogin:true,user:{email:result?.data?.user?.email}}));
+                localStorage.setItem('access_token',JSON.stringify(result?.data?.user?.access_token));
+                localStorage.setItem('auth',JSON.stringify({isLogin:true,user:{email:result?.data?.user?.email}}));
+            }
+            else{
+                setHasError(result?.message);
+            }
+        }
     }
+
+    const validateEmail = (emailInput: string)=>{
+        if(emailInput.length && !isEmail(emailInput)){
+            setHasError('Invalid email address')
+        }
+    }
+
+    const debounceValidateEmail = useCallback(debounce(validateEmail,1000),[])
+
+    useEffect(()=>{
+        setHasError(undefined);
+        debounceValidateEmail(email);
+    },[email])
 
     const hideErrorMessage = ()=>{
         setHasError(undefined);
@@ -57,10 +84,11 @@ const Login : FunctionComponent = ()=> {
             callback: async (res: any)=>{
                 const data = await loginWithGoogle(res.credential);
                 console.log(data);
-                const tokenData = data?.data?.access_token
+                const tokenData = data?.data?.user?.access_token
                 if(tokenData){
-                    dispatch(setIsLogin({isLogin:true,user:{email:data?.data?.email}}));
-                    localStorage.setItem('auth',JSON.stringify({isLogin:true,user:{email:data?.data?.email,access_token:tokenData}}));
+                    dispatch(setIsLogin({isLogin:true,user:{email:data?.data?.user?.email}}));
+                    localStorage.setItem('access_token',JSON.stringify(data?.data?.user?.access_token));
+                    localStorage.setItem('auth',JSON.stringify({isLogin:true,user:{email:data?.data?.user?.email,access_token:tokenData}}));
                 }
                 else{
                     dispatch(setIsLogin({isLogin:false,user:{}}));
@@ -70,12 +98,55 @@ const Login : FunctionComponent = ()=> {
         window.google.accounts.id.prompt();
     }
 
-    const handleLoginFacebook = async ()=>{
-        window.FB.login(function(response: any){
-            console.log(response)
-            // handle the response 
-        });
+    const handleDataFacebookLogin = async ()=> {
+        console.log(fbUserId,fbToken);
+        const result = await loginWithFacebook(fbUserId!,fbToken!);
+        console.log('Get facebook data:',result);
+        if(result){
+            const token = result?.data?.user?.access_token;
+            console.log('fb token:',token)
+
+            if(token){
+                dispatch(setIsLogin({isLogin:true,user:{email:result?.data?.user?.email}}));
+                localStorage.setItem('access_token',JSON.stringify(result?.data?.user?.access_token));
+                localStorage.setItem('auth',JSON.stringify({isLogin:true,user:{email:result?.data?.user?.email}}));
+            }
+            else{
+                dispatch(setIsLogin({isLogin:false,user:{}}));
+            }
+        }
     }
+
+    const handleFacebookLogin = async ()=>{
+
+        await window.FB.init({
+            appId            : process.env.REACT_APP_FACEBOOK_APP_ID,
+            autoLogAppEvents : true,
+            xfbml            : true,
+            version          : 'v14.0'
+        });
+
+        await window.FB.login((response: any) => {
+            console.log(response);
+            if (response.authResponse) {
+                const responseUserId = response?.authResponse?.userID;
+                const responseToken = response?.authResponse?.accessToken;
+                setFbToken(responseToken);
+                setFbUserId(responseUserId);
+            } else {
+                console.log('User cancelled login or did not fully authorize.');
+            }
+        });
+    };
+
+    useEffect(()=>{
+        if(fbUserId === undefined || fbToken === undefined){
+            return;
+        }
+        else{
+            handleDataFacebookLogin();
+        }
+    },[fbUserId,fbToken])
 
     return (
         <Grid 
@@ -142,22 +213,22 @@ const Login : FunctionComponent = ()=> {
                 }
             </Grid>
             <Grid className={styles.loginGroup} mb={3}>
-                <Button 
-                    className={`${styles.loginButton, styles.loginSocialButton}`} 
-                    onClick={handleGoogleLogin} 
-                    variant="contained"
+                <button 
+                    className={`${styles.loginButton} ${styles.loginSocialButton}`} 
+                    onClick={handleGoogleLogin}
                 >
+                    <img src={GoogleLogo} alt="" />
                     Login with Google
-                </Button>
+                </button>
             </Grid>
             <Grid className={styles.loginGroup} mb={3}>
-                <Button 
-                    className={`${styles.loginButton, styles.loginSocialButton}`} 
-                    onClick={handleLoginFacebook} 
-                    variant="contained"
+                <button 
+                    className={`${styles.loginButton} ${styles.loginSocialButton}`}
+                    onClick={handleFacebookLogin}
                 >
+                    <img src={FacebookLogo} alt="" />
                     Login with Facebook
-                </Button>
+                </button>
             </Grid>
         </Grid>
     )

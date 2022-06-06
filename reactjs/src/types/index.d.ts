@@ -2,7 +2,8 @@ export {};
 
 declare global {
   interface Window {
-    google: any;
+    google: any
     FB: any
+    fbAsyncInit: any
   }
 }

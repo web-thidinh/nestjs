@@ -11,12 +11,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/'>
-          {!isLogin
-            ? <Route path='/' element={<LoginScreen/>}/>
-            : <Route path='/' element={<HomeScreen/>}/>
-          }
-        </Route>
+        {!isLogin
+          ? <Route path='/' element={<LoginScreen/>}/>
+          : <Route path='/' element={<HomeScreen/>}/>
+        }
       </Routes>
     </BrowserRouter>
   );
